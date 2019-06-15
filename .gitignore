@@ -1,0 +1,4 @@
+.temp/
+BUILD/
+*.pyc
+.*.swp
