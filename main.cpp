@@ -1,24 +1,28 @@
-#define MULTIPLE_PROBES
-#define DATA_PIN        D7
-
 #include "mbed.h"
 #include "rtos.h"
 #include "DS1820.h"
 
-#define MAX_PROBES      16
+#define MULTIPLE_PROBES
+#define DATA_PIN D7 // DS18B20 temperature sensors connected to this pin
+#define RELAY_OUT D2 // cooling device relay board channel connected to this pin
+#define MAX_PROBES 16
+#define SIG_BUTTON 0x1 // button signal
 
-#define SIG_BUTTON 0x1
-#define POLL_DELAY 15000 // ms
+#define POLL_DELAY 5000 // ms
 
+Serial pc(USBTX, USBRX);
 DigitalOut led(LED1);
 
 DS1820* probe[MAX_PROBES];
 volatile int num_devices = 0;
 Thread pollProbesThread;
 
-InterruptIn button(USER_BUTTON);
+InterruptIn button(USER_BUTTON); // user button input to re-scan DS18B20 devices
 
-  
+DigitalOut cooler_relay(RELAY_OUT); // output to relay board for controlling cooling device
+
+const float TEMP_SETPOINT = 10.0; // °C
+const float TEMP_HYSTERESIS = 0.5; // °C
 
 void enumerateProbes() {
     num_devices = 0;
@@ -50,6 +54,17 @@ void buttonSignalISR() {
     pollProbesThread.signal_set(SIG_BUTTON); // signal thread to refresh list of probes
 }
  
+void serialRecv() {
+    char commandChar = pc.getc(); // get command character recieved from computer
+    switch (commandChar) {
+        case 'r':
+            pollProbesThread.signal_set(SIG_BUTTON); // signal thread to refresh probes
+            break;
+        default:
+            break;
+    }
+}
+
 int main() {  
     // Initialize the probe array to DS1820 objects
     pollProbesThread.start(pollProbes); // start polling thread
