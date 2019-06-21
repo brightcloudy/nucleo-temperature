@@ -1,0 +1,10 @@
+set xdata time
+set timefmt "%s"
+set format x "%H:%M"
+set xlabel "Time UTC (HH:MM)"
+set ylabel "Temperature (°C)"
+set datafile missing "?"
+
+set terminal png size 1280,1024
+set output "plot.png"
+plot for[col=2:*] '/dev/shm/gnudata' using 1:col with lines title 'Sensor '.(col-2)
