@@ -73,8 +73,19 @@ DS1820::DS1820 (PinName data_pin, PinName power_pin, bool power_polarity) : _dat
     // Enable GPIO clock 
     uint32_t gpio_add = Set_GPIO_Clock(port_index); 
     GPIO_TypeDef *gpio = (GPIO_TypeDef *)gpio_add; 
+    
+    // special initalization for STM32F1
+    #ifdef TARGET_STM32F1
+    GPIO_InitTypeDef gpio_init;
+    gpio_init.Pin = (uint32_t) (1 << pin_index);
+    gpio_init.Mode = GPIO_MODE_OUTPUT_OD;
+    gpio_init.Pull = GPIO_PULLUP;
+    gpio_init.Speed = GPIO_SPEED_HIGH;
+    HAL_GPIO_Init(gpio, &gpio_init);
+    #else
+    gpio->OTYPER |= (uint32_t)(1 << pin_index);
+    #endif
 
-    gpio->OTYPER |= (uint32_t)(1 << pin_index); 
     #endif
     
     if (!unassignedProbe(&_datapin, _ROM))
@@ -169,7 +180,13 @@ bool DS1820::unassignedProbe(PinName pin) {
     uint32_t gpio_add = Set_GPIO_Clock(port_index); 
     GPIO_TypeDef *gpio = (GPIO_TypeDef *)gpio_add; 
 
-    gpio->OTYPER |= (uint32_t)(1 << pin_index); 
+    //gpio->OTYPER |= (uint32_t)(1 << pin_index); 
+    GPIO_InitTypeDef gpio_init;
+    gpio_init.Pin = (uint32_t) (1 << pin_index);
+    gpio_init.Mode = GPIO_MODE_OUTPUT_OD;
+    gpio_init.Pull = GPIO_PULLUP;
+    gpio_init.Speed = GPIO_SPEED_HIGH;
+    HAL_GPIO_Init(gpio, &gpio_init);
     #endif
     char ROM_address[8];
     return search_ROM_routine(&_pin, 0xF0, ROM_address);
