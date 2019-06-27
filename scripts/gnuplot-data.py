@@ -1,10 +1,11 @@
 #!/usr/bin/python
 import sqlite3
 import sys
-if len(sys.argv) != 2:
+if len(sys.argv) != 3:
     sys.exit(1)
 
-conn = sqlite3.connect(sys.argv[1])
+span = -1 * int(sys.argv[1])
+conn = sqlite3.connect(sys.argv[2])
 
 c = conn.cursor()
 
@@ -21,12 +22,14 @@ for sensor in range(numsensors+1):
     c.execute("select timestamp, tempvalue from tempdata where sensorid=? and tempvalue not null", (sensor,))
     for row in c:
         temps[sensor].append(row[1])
+if (-1 * span) > len(times):
+    span = -1 * len(times)
 
-for x,i in enumerate(times):
+for x,i in enumerate(times[span:]):
     outputrow = "%d" % i
     for s in range(numsensors+1):
-        if temps[s][x] == -1000.0:
+        if temps[s][x+span] == -1000.0:
             outputrow += " ?"
         else:
-            outputrow += " %f" % temps[s][x]
+            outputrow += " %f" % temps[s][x+span]
     print outputrow
