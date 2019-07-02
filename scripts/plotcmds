@@ -7,4 +7,6 @@ set datafile missing "?"
 
 set terminal png size 1280,1024
 set output "plot.png"
-plot for[col=2:*] '/dev/shm/gnudata' using 1:col with lines title 'Sensor '.(col-2)
+set style line 1 lw 3
+set grid
+plot for[col=2:*] '/dev/shm/gnudata' using 1:col with lines ls 1 title 'Sensor '.(col-2)
