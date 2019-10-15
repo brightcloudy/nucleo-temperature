@@ -13,6 +13,7 @@
 #define RELAY_TWO D3 // cooling device relay board channel connected to this pin
 #define RELAY_THREE D4
 #define RELAY_FOUR D5
+#define RELAY_DAYLIGHT RELAY_THREE
 
 #define SIG_ANY 0x0 // any signal
 #define SIG_RESET 0x1 // button signal
@@ -98,6 +99,12 @@ void serialRecv() {
         case '1':
             selected_sensor = 1; // set selected sensor for control to 0
             pollProbesThread.signal_set(SIG_SELECT); // signal thread to update pointer
+            break;
+        case 'd': 
+            switchRelays(RELAY_DAYLIGHT, 1); // set LEDs to white for daylight
+            break;
+        case 'n':
+            switchRelays(RELAY_DAYLIGHT, 0); // set LEDs to IR for night
             break;
         default:
             break;
